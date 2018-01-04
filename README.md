@@ -7,5 +7,38 @@ Write Backpressure is achieved by only allowing one write to be processed at a t
 ## Read Backpressure
 Read Backpressure is achieved differently from how Write Backpressure is achieved, although still ACK based. `Received` messages coming from the Akka connection actor, are flown to the injected data handler actor until the `InboundHandler` has reached the configured high watermark. The connection actor will then be notified to suspend reading from the socket until it receives the `ResumeReading` message from the `InboundHandler` actor.
 
-## Usage
+## Installation
 TODO
+
+## Usage
+Making use of this is as easy as creating an actor:
+
+```
+  val inboundConfig = InboundConfig(
+    ReadThrottleConfig(
+      lowWaterMark = 5000,
+      highWaterMark = 15000
+    ),
+
+    WriteThrottleConfig(
+      // nothing
+    )
+  )
+
+  val tcp = context.actorOf(TcpServer.props(inboundConfig, dataHandlerProducer), "tcp")
+```
+
+In order to start listening at a specific port, simply send the `TcpServer` actor a `BindTo` message:
+`tcp ! BindTo(port = 8888)`
+
+### Handling your data
+TODO
+
+### Supervision Strategy
+Errors that come from children of TcpServer which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisionStrategy` method:
+
+```
+  override def supervisorStrategy = OneForOneStrategy() {
+    case _: Exception => Resume
+  }
+```
