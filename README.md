@@ -32,13 +32,20 @@ In order to start listening at a specific port, simply send the `TcpServer` acto
 `tcp ! BindTo(port = 8888)`
 
 ### Handling your data
-TODO
+As you've probably noticed, a `dataHandlerProducer` is passed in the `TcpServer` actor `Props` configuration. To create your own customized producer, simply inherit the `DataHandlerProducer` trait:
+
+```
+final class MyCustomDataHandlerProducer extends DataHandlerProducer {
+    override def produce(inboundHandler: ActorRef) =
+      Props(new MyCustomDataHandler(inboundHandler))
+}
+```
 
 ### Supervision Strategy
-Errors that come from children of TcpServer which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisionStrategy` method:
+Errors that come from children of the `TcpServer` which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisionStrategy` method:
 
 ```
   override def supervisorStrategy = OneForOneStrategy() {
-    case _: Exception => Resume
+    case _: Exception => Restart
   }
 ```
