@@ -2,7 +2,7 @@ package org.sinoz.akka.tcp.backpressure
 
 import java.net.InetSocketAddress
 
-import akka.actor.SupervisorStrategy.Stop
+import akka.actor.SupervisorStrategy.Escalate
 import akka.actor.{Actor, ActorLogging, ActorRef, OneForOneStrategy, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
@@ -12,7 +12,7 @@ import org.sinoz.akka.tcp.backpressure.InboundListener.{BindTo, CloseDown}
 /** @author Sino */
 final class InboundListener(handlerManager: ActorRef) extends Actor with ActorLogging {
   override def supervisorStrategy = OneForOneStrategy() {
-    case _ => Stop
+    case _ => Escalate
   }
 
   override def receive = {

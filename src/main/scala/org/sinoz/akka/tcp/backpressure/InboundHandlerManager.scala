@@ -1,12 +1,17 @@
 package org.sinoz.akka.tcp.backpressure
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.SupervisorStrategy.Escalate
+import akka.actor.{Actor, ActorRef, OneForOneStrategy, Props}
 import akka.io.Tcp.Register
 import org.sinoz.akka.tcp.backpressure.InboundHandler.SubscribeDataHandler
 import org.sinoz.akka.tcp.backpressure.InboundHandlerManager.Inbound
 
 /** @author Sino */
 final class InboundHandlerManager(config: InboundConfig, dataHandlerProducer: DataHandlerProducer) extends Actor {
+  override def supervisorStrategy = OneForOneStrategy() {
+    case _: Exception => Escalate
+  }
+
   override def receive = {
     case Inbound(connection) =>
       val inboundHandler = context.actorOf(InboundHandler.props(connection, config))

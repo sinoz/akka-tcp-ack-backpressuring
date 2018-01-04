@@ -1,6 +1,6 @@
 package org.sinoz.akka.tcp.backpressure
 
-import akka.actor.SupervisorStrategy.Resume
+import akka.actor.SupervisorStrategy.Escalate
 import akka.actor.{Actor, OneForOneStrategy, Props}
 import org.sinoz.akka.tcp.backpressure.InboundListener.InboundListenerMsg
 
@@ -10,7 +10,7 @@ final class TcpServer(config: InboundConfig, dataHandlerProducer: DataHandlerPro
   val inboundListener = context.actorOf(InboundListener.props(handlerManager), "inbound-listener")
 
   override def supervisorStrategy = OneForOneStrategy() {
-    case _: Exception => Resume
+    case _: Exception => Escalate
   }
 
   override def receive = {
