@@ -31,6 +31,8 @@ Making use of this is as easy as creating an actor:
 In order to start listening at a specific port, simply send the `TcpServer` actor a `BindTo` message:
 `tcp ! BindTo(port = 8888)`
 
+To stop the `TcpServer` actor from listening for inbound connections, a `CloseDown()` message may be sent.
+
 ### Handling your data
 As you've probably noticed, a `dataHandlerProducer` is passed in the `TcpServer` actor `Props` configuration. To create your own customized producer, simply inherit the `DataHandlerProducer` trait:
 
