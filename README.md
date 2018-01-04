@@ -14,18 +14,18 @@ TODO
 Making use of this is as easy as creating an actor:
 
 ```
-  val inboundConfig = InboundConfig(
-    ReadThrottleConfig(
-      lowWaterMark = 5000,
-      highWaterMark = 15000
-    ),
+val inboundConfig = InboundConfig(
+  ReadThrottleConfig(
+    lowWaterMark = 5000,
+    highWaterMark = 15000
+  ),
 
-    WriteThrottleConfig(
-      // nothing
-    )
+  WriteThrottleConfig(
+    // nothing
   )
+)
 
-  val tcp = context.actorOf(TcpServer.props(inboundConfig, dataHandlerProducer), "tcp")
+val tcp = context.actorOf(TcpServer.props(inboundConfig, dataHandlerProducer), "tcp")
 ```
 
 In order to start listening at a specific port, simply send the `TcpServer` actor a `BindTo` message:
@@ -63,11 +63,11 @@ To maintain backpressure, it is very important to send back the given `Ack` mess
 ### Sending data back
 Data can be sent to the remote TCP client by sending the injected `inboundHandler` in your custom data handler, a `SendData(ByteString())` message.
 
-### Supervision Strategy
-Errors that come from children of the `TcpServer` which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisionStrategy` method:
+### Supervisor Strategy
+Errors that come from children of the `TcpServer` which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisorStrategy` method:
 
 ```
-  override def supervisorStrategy = OneForOneStrategy() {
-    case _: Exception => Restart
-  }
+override def supervisorStrategy = OneForOneStrategy() {
+  case _: Exception => Restart
+}
 ```
