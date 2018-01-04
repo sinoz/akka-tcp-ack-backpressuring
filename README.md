@@ -35,11 +35,31 @@ In order to start listening at a specific port, simply send the `TcpServer` acto
 As you've probably noticed, a `dataHandlerProducer` is passed in the `TcpServer` actor `Props` configuration. To create your own customized producer, simply inherit the `DataHandlerProducer` trait:
 
 ```
-final class MyCustomDataHandlerProducer extends DataHandlerProducer {
-    override def produce(inboundHandler: ActorRef) =
-      Props(new MyCustomDataHandler(inboundHandler))
+final class MyCustomDataHandlerProducer(eventHandler: ActorRef) extends DataHandlerProducer {
+  override def produce(inboundHandler: ActorRef) =
+    Props(new MyCustomDataHandler(eventHandler, inboundHandler))
 }
 ```
+
+And don't forget your custom data handler, which will listen for `DataAvailable(data, ack)` messages.
+
+```
+final class MyCustomDataHandler(eventHandler: ActorRef, inboundHandler: ActorRef) extends Actor {
+  override def receive = {
+    case DataAvailable(data, ack) =>
+      try {
+        eventHandler ! MyEvent(data.head)
+      } finally {
+        sender() ! ack
+      }
+  }
+}
+```
+
+To maintain backpressure, it is very important to send back the given `Ack` message back to the client once your data is processed, as is demonstrated in the example above.
+
+### Sending data back
+Data can be sent to the remote TCP client by sending the injected `inboundHandler` in your custom data handler, a `SendData(ByteString())` message.
 
 ### Supervision Strategy
 Errors that come from children of the `TcpServer` which is also your data handler, are automatically escalated to the parent of the `TcpServer` actor. Simply override the `supervisionStrategy` method:
