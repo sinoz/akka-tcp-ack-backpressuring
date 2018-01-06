@@ -58,7 +58,14 @@ final class MyCustomDataHandler(eventHandler: ActorRef, inboundHandler: ActorRef
 }
 ```
 
-To maintain backpressure, it is very important to send back the given `Ack` message back to the client once your data is processed, as is demonstrated in the example above.
+To maintain backpressure, it is very important to send back the given `Ack` message back to the client once your data is processed, as is demonstrated in the example above. Should you find the usual Try/Finally blocks aesthetically displeasing, the helper `AckHelper` trait comes to the rescue:
+
+```
+case DataAvailable(data, ack) =>
+  deferAck(ack) {
+      eventHandler ! MyEvent(data.head)
+  }
+```
 
 ### Sending data back
 Data can be sent to the remote TCP client by sending the injected `inboundHandler` in your custom data handler, a `SendData(ByteString())` message.
